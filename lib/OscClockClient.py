@@ -10,8 +10,8 @@ from lib.OscClockServer import *
 import threading
 import sys
 
-#0をそのまま入力するとなぜかfloatの最大が入力されるのでsys.float_info.epsilonをZEROとする使う
-ZERO = sys.float_info.epsilon
+#0をそのまま入力するとなぜかfloatの最大が入力されるのでbinary32のイプシロンをZEROとする使う
+ZERO = 1.193e-7
 
 
 
@@ -54,9 +54,9 @@ class OscStopwatch():
     def Reset(self):
 
         self.ResetSub()
-        while not((self.server.second == ZERO) and 
-                    (self.server.minute == ZERO) and 
-                    (self.server.hour == ZERO) and 
+        while not((abs(self.server.second) <= ZERO) and 
+                    (abs(self.server.minute) <= ZERO) and 
+                    (abs(self.server.hour) <= ZERO) and 
                     (not(self.server.start_button.button_state))):
             self.ResetSub()
             time.sleep(0.1)
@@ -79,9 +79,16 @@ class OscStopwatch():
 
         #そのままだと時分秒の関係ずれているので、直す
         self.second = math.floor(self.second * 60)/60
+        if self.second + ZERO > 1:
+            self.second = 1 - ZERO
+        
         self.minute = (math.floor(self.minute * 60) + self.second)/60
-        self.hour = (math.floor(self.hour * 24) +  self.minute)/24
+        if self.minute + ZERO > 1:
+            self.minute = 1 - ZERO
 
+        self.hour = (math.floor(self.hour * 24) +  self.minute)/24
+        if self.hour + ZERO > 1:
+            self.hour = 1 - ZERO
         #直した状態を送信する。
         self.client.send_message("/avatar/parameters/second", self.second)
         self.client.send_message("/avatar/parameters/minute", self.minute)
