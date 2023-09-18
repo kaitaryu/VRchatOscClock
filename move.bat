@@ -7,4 +7,4 @@ if exist "./.venv" (
     call .\.venv\Scripts\activate 
     pip install -r requirements.txt
 )
-pythonw .\main_client.py 
+python .\main_client.py 
